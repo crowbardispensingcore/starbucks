@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Starbucks Reserved</title>
+    <link th:href="@{/styles/main.css}" rel="stylesheet" />
+</head>
+<body>
+    <div class="center-col">
+        <h1>Welcome to Starbucks Reserved</h1>
+        <div class="center-row">
+            <img th:src="@{https://media.tenor.com/j2Y3m-aZZPwAAAAC/starbucks-coffee-starbucks.gif}" />
+            <textarea th:text="${statusDisplay}" cols="50" rows="13" readonly>
+            </textarea>
+        </div>
+    </div>
+</body>
+</html>

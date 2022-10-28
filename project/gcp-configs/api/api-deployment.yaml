@@ -21,5 +21,7 @@ spec:
         env:
         - name: MYSQL_HOST
           value: "172.20.80.3"
+        - name: SPRING_PROFILES_ACTIVE
+          value: "test"
         ports:
         - containerPort: 8080
