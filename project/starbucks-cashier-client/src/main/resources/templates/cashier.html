@@ -7,13 +7,67 @@
     <link th:href="@{/styles/main.css}" rel="stylesheet" />
 </head>
 <body>
-    <div class="center-col">
-        <h1>Welcome to Starbucks Reserved</h1>
-        <div class="center-row">
-            <img th:src="@{https://media.tenor.com/j2Y3m-aZZPwAAAAC/starbucks-coffee-starbucks.gif}" />
-            <textarea th:text="${statusDisplay}" cols="50" rows="13" readonly>
-            </textarea>
+    <form name="form" method="post" action="" th:object="${command}">
+        <div class="center-col">
+            <h1>Welcome to Starbucks Reserved</h1>
+            <span>
+                <label th:for="store">Select Store: </label>
+                <select th:name="store" id="store">
+                    <option value="5012349">Dub-C</option>
+                    <option value="1287612">P-Town</option>
+                    <option value="6498234">The City</option>
+                    <option value="7812386">Eso</option>
+                    <option value="8723098">The Dro</option>
+                    <option value="9621043">Mateo</option>
+                    <option value="1393478">Deadwood</option>
+                </select>
+<!--                <span>-->
+<!--                    <label th:for="store">Select Store: </label>-->
+<!--                    <select th:name="store" id="store">-->
+<!--                        <option th:each="drink : ${drinks}" th:value="${drink}" th:text="${drink}"></option>-->
+<!--                    </select>-->
+<!--                </span>-->
+            </span>
+            <br>
+            <div class="center-row">
+                <img th:src="@{https://media.tenor.com/j2Y3m-aZZPwAAAAC/starbucks-coffee-starbucks.gif}" />
+                <textarea th:text="${registerDisplay}" cols="50" rows="13" readonly>
+                </textarea>
+            </div>
+            <br>
+            <br>
+            <br>
+            <span>
+                <label th:for="drink">Select Drink: </label>
+                <select th:name="drink" id="drink">
+                    <option th:each="drink : ${drinks}" th:value="${drink}" th:text="${drink}"></option>
+                </select>
+            </span>
+            <br>
+            <br>
+            <span>
+                <label th:for="milk">Select Milk: </label>
+                <select th:name="milk" id="milk">
+                    <option th:each="milk : ${milks}" th:value="${milk}" th:text="${milk}"></option>
+                </select>
+            </span>
+            <br>
+            <br>
+            <span>
+                <label th:for="size">Select Size: </label>
+                <select th:name="size" id="size">
+                    <option th:each="size : ${sizes}" th:value="${size}" th:text="${size}"></option>
+                </select>
+            </span>
+            <br>
+            <br>
+            <br>
+            <br>
+            <span>
+                <input type="submit" name="action" id="btnPlaceOrder" value="Place Order">
+                <input type="submit" name="action" id="btnClearOrder" value="Clear Order">
+            </span>
         </div>
-    </div>
+    </form>
 </body>
 </html>
