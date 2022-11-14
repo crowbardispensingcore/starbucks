@@ -1,5 +1,7 @@
 # Week 1
 
+- Deploy Starbucks REST API to GCP
+
 # Starbucks API
 
 GCP MySQL instance private IP address: `172.20.80.3`
@@ -8,7 +10,9 @@ kong-proxy endpoint: `34.171.154.111`
 
 starbucks-api endpoint: `34.171.154.111/api `
 
-## Deployment process:
+apiKey: `Zkfokey2311`
+
+## Deployment process
 
 ```
 // Create jumpbox
@@ -18,14 +22,13 @@ kubectl create -f jumpbox.yaml
 kubectl exec -it jumpbox -- /bin/bash
 apt update
 apt upgrade -y
-apt install curl
-apt install iputils-ping
-apt install telnet
-apt install httpie
-apt install mysql-client
+apt install curl -y
+apt install iputils-ping -y
+apt install telnet -y
+apt install httpie -y
+apt install mysql-client -y
 
 // Test MySQL instance connection
-apt install mysql-client
 mysql -u root -p -h 172.20.80.3
 
 // Create api
@@ -61,3 +64,16 @@ curl $KONG/api/ping
 // Test with key
 curl $KONG/api/ping --header 'apikey: Zkfokey2311'
 ```
+
+# Week 2
+
+- Fix a bug where the spring-starbucks-api in GCP uses H2 database instead of MySQL
+  - Add `SPRING_PROFILES_ACTIVE` environment variable to `api-deployment.yaml`
+  - Redeploy the pods by applying the new deployment config, deleting the old pods and letting kubernetes re-pull and re-deploy
+- Working on starbucks-cashier-client
+
+# Week 3
+
+- Add Starbucks cashier register client
+  - Test cashier client using the deployed API
+

@@ -3,6 +3,8 @@ package com.example.starbuckscashierclient.rest;
 import com.example.starbuckscashierclient.model.NewOrderRequest;
 import com.example.starbuckscashierclient.model.OrderResponse;
 import com.example.starbuckscashierclient.model.RegisterCommand;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Log4j2
 @Controller
@@ -46,6 +50,7 @@ public class OrderController {
 
     private static final String hostEndpoint = "http://34.171.154.111/api";
     private static final String apiKey = "Zkfokey2311";
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     @GetMapping("/")
     public String getPage(Model model) {
@@ -94,11 +99,13 @@ public class OrderController {
                         command.getStore()
                 );
             }
-            catch (Exception e) {
+            catch (HttpClientErrorException e) {
                 log.info(e.getMessage());
                 registerDisplay = String.format(
-                        "Starbucks Reserved Order\n\n\nRegister: %s\nStatus: Unable to clear order. Order Not Found!",
-                        command.getStore()
+                        "Starbucks Reserved Order\n\n\n" +
+                                "Register: %s\n" +
+                                "Status: %s",
+                        command.getStore(), parseResponseErrorMessage(e)
                 );
             }
         }
@@ -125,11 +132,44 @@ public class OrderController {
                         newOrder.getTotal(), newOrder.getRegister()
                 );
             }
-            catch (Exception e) {
+            catch (HttpClientErrorException e) {
                 log.info(e.getMessage());
                 registerDisplay = String.format(
-                        "Starbucks Reserved Order\n\n\nRegister: %s\nStatus: Unable to place order. Active Order Exists!",
-                        command.getStore()
+                        "Starbucks Reserved Order\n\n\n" +
+                                "Register: %s\n" +
+                                "Status: %s",
+                        command.getStore(), parseResponseErrorMessage(e)
+                );
+            }
+        }
+        else if (action.equals("Refresh Order")) {
+            log.info("Performing Refresh Order action");
+            resourceUrl = hostEndpoint + "/order/register/" + command.getStore();
+            ResponseEntity<OrderResponse> orderResponse;
+            HttpEntity<NewOrderRequest> httpEntity = new HttpEntity<>(httpHeaders);
+            try {
+                orderResponse = restTemplate.exchange(resourceUrl, HttpMethod.GET, httpEntity, OrderResponse.class);
+                log.info(orderResponse.getBody());
+                OrderResponse order = orderResponse.getBody();
+                registerDisplay = String.format(
+                        "Starbucks Reserved Order\n\n\n" +
+                                "Drink: %s\n" +
+                                "Milk: %s\n" +
+                                "Size: %s\n" +
+                                "Total: %f\n" +
+                                "Register: %s\n" +
+                                "Status: %s",
+                        order.getDrink(), order.getMilk(), order.getSize(),
+                        order.getTotal(), order.getRegister(), order.getSize()
+                );
+            }
+            catch (HttpClientErrorException e) {
+                log.info(e.getMessage());
+                registerDisplay = String.format(
+                        "Starbucks Reserved Order\n\n\n" +
+                                "Register: %s\n" +
+                                "Status: %s",
+                        command.getStore(), parseResponseErrorMessage(e)
                 );
             }
         }
@@ -140,5 +180,16 @@ public class OrderController {
         model.addAttribute("sizes", SIZE_OPTIONS);
 
         return "cashier";
+    }
+
+    private String parseResponseErrorMessage(HttpClientErrorException e) {
+        String responseString = e.getResponseBodyAsString();
+        try {
+            Map<String, Object> response = mapper.readValue(responseString, Map.class);
+            return response.get("message").toString();
+        }
+        catch (Exception pe) {
+            return "Unknown error!";
+        }
     }
 }
