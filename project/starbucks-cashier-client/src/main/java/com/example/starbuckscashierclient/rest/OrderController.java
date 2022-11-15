@@ -3,7 +3,6 @@ package com.example.starbuckscashierclient.rest;
 import com.example.starbuckscashierclient.model.NewOrderRequest;
 import com.example.starbuckscashierclient.model.OrderResponse;
 import com.example.starbuckscashierclient.model.RegisterCommand;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpEntity;
@@ -16,16 +15,17 @@ import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.view.RedirectView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @Log4j2
 @Controller
@@ -52,7 +52,12 @@ public class OrderController {
     private static final String apiKey = "Zkfokey2311";
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    @GetMapping("/")
+    @RequestMapping("/")
+    public RedirectView redirectToRegister() {
+        return new RedirectView("/register");
+    }
+
+    @GetMapping("/register")
     public String getPage(Model model) {
         String registerDisplay = String.format(
                 "Starbucks Reserved Order\n\n\n" +
@@ -67,10 +72,10 @@ public class OrderController {
         model.addAttribute("milks", MILK_OPTIONS);
         model.addAttribute("sizes", SIZE_OPTIONS);
 
-        return "cashier";
+        return "register";
     }
 
-    @PostMapping("/")
+    @PostMapping("/register")
     public String postAction(
             @ModelAttribute("command") RegisterCommand command,
             @RequestParam(value = "action", required = true) String action,
@@ -160,7 +165,7 @@ public class OrderController {
                                 "Register: %s\n" +
                                 "Status: %s",
                         order.getDrink(), order.getMilk(), order.getSize(),
-                        order.getTotal(), order.getRegister(), order.getSize()
+                        order.getTotal(), order.getRegister(), order.getStatus()
                 );
             }
             catch (HttpClientErrorException e) {
@@ -179,7 +184,7 @@ public class OrderController {
         model.addAttribute("milks", MILK_OPTIONS);
         model.addAttribute("sizes", SIZE_OPTIONS);
 
-        return "cashier";
+        return "register";
     }
 
     private String parseResponseErrorMessage(HttpClientErrorException e) {
