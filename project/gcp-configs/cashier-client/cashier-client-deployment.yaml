@@ -1,12 +1,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: spring-starbucks-api-deployment
+  name: spring-starbucks-cashier-client-deployment
   namespace: default
 spec:
   selector:
     matchLabels:
-      name: spring-starbucks-api
+      name: spring-starbucks-cashier-client
   replicas: 2 # tells deployment to run 2 pods matching the template
   template: # create pods using pod definition in this template
     metadata:

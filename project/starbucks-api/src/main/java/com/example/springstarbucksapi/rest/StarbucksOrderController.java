@@ -55,14 +55,9 @@ public class StarbucksOrderController {
     }
 
     /* Get Details of a Starbucks Order */
-    @GetMapping("/order/register/{regid}")
-    StarbucksOrder getActiveOrder(@PathVariable String regid, HttpServletResponse response) {
-        StarbucksOrder active = service.getActiveOrder(regid) ;
-        if (active != null) {
-            return active;
-        } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order Not Found!");
-        }
+    @GetMapping("/order/register/{regId}")
+    StarbucksOrder getMostRecentOrder(@PathVariable String regId, HttpServletResponse response) {
+        return service.getMostRecentOrder(regId) ;
     }
 
     /* Clear Active Order */

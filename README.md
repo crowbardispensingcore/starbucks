@@ -6,6 +6,10 @@
 
 GCP MySQL instance private IP address: `172.20.80.3`
 
+MySQL username: `root`
+
+MySQL password: `cmpe172`
+
 kong-proxy endpoint: `34.171.154.111`
 
 starbucks-api endpoint: `34.171.154.111/api `
@@ -77,3 +81,23 @@ curl $KONG/api/ping --header 'apikey: Zkfokey2311'
 - Add Starbucks cashier register client
   - Test cashier client using the deployed API
 
+# Week 4
+
+- Add login for cashier client
+
+## Spring Security
+
+Ref: https://www.javadevjournal.com/spring-security/spring-security-login/
+
+### How to Generate and Use A BCrypt Password
+
+1. Go to https://bcrypt-generator.com/
+2. Store the generated value to the database
+
+# Week 5
+
+- Update API credentials to environment variables
+
+## How to re-apply manifest
+
+`kubectl apply -f my-deployment.yaml`

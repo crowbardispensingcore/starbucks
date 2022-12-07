@@ -5,16 +5,18 @@ import com.example.springstarbucksapi.model.StarbucksOrder;
 import com.example.springstarbucksapi.repository.StarbucksCardRepository;
 import com.example.springstarbucksapi.repository.StarbucksOrderRepository;
 
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
+@Log4j2
 @Service("StarbucksService")
 public class StarbucksService {
 
@@ -63,7 +65,7 @@ public class StarbucksService {
     }
 
     // https://docs.oracle.com/javase/8/docs/api/java/util/HashMap.html
-    private HashMap<String, StarbucksOrder> orders = new HashMap<>();
+//    private HashMap<String, StarbucksOrder> orders = new HashMap<>();
 
     /* https://docs.spring.io/spring-data/jpa/docs/2.4.5/api/ */
 
@@ -75,22 +77,24 @@ public class StarbucksService {
     /* Delete All Starbucks Orders (Cleanup for Unit Testing) */
     public void deleteAllOrders() {
         ordersRepository.deleteAllInBatch();
-        orders.clear();
+//        orders.clear();
     }
 
     /* Create a New Starbucks Order */
     public StarbucksOrder newOrder(String regid, StarbucksOrder order) throws ResponseStatusException {
-        System.out.println("Placing Order (Reg ID = " + regid + ") => " + order);
+        log.info("Placing Order (Reg ID = " + regid + ") => " + order);
         // check input
         if (order.getDrink().equals("") || order.getMilk().equals("") || order.getSize().equals("")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Order Request!");
         }
         // check for active order
-        StarbucksOrder active = orders.get(regid);
-        if (active != null) {
-            System.out.println("Active Order (Reg ID = " + regid + ") => " + active);
-            if (active.getStatus().equals("Ready for Payment."))
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Active Order Exists!");
+//        StarbucksOrder active = orders.get(regid);
+        Optional<StarbucksOrder> active = ordersRepository.findStarbucksOrderByRegisterAndStatus(regid, "Ready for Payment.");
+        if (active.isPresent()) {
+//            System.out.println("Active Order (Reg ID = " + regid + ") => " + active);
+//            if (active.getStatus().equals("Ready for Payment."))
+//                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Active Order Exists!");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Active Order Exists!");
         }
         // set price
         double price = 0.0;
@@ -183,18 +187,43 @@ public class StarbucksService {
         order.setRegister(regid);
         order.setStatus("Ready for Payment.");
         StarbucksOrder new_order = ordersRepository.save(order);
-        orders.put(regid, new_order);
+//        orders.put(regid, new_order);
         return new_order;
     }
 
     /* Get Details of a Starbucks Order */
-    public StarbucksOrder getActiveOrder(String regid) {
-        return orders.get(regid);
+    public StarbucksOrder getActiveOrder(String regId) {
+//        return orders.get(regid);
+        Optional<StarbucksOrder> active = ordersRepository.findStarbucksOrderByRegisterAndStatus(regId, "Ready for Payment.");
+        if (active.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No Active Order!");
+        }
+        else {
+            return active.get();
+        }
+    }
+
+    public StarbucksOrder getMostRecentOrder(String regId) {
+        Optional<StarbucksOrder> mostRecent = ordersRepository.findTop1ByRegisterOrderByIdDesc(regId);
+        if (mostRecent.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No Order Found!");
+        }
+        else {
+            return mostRecent.get();
+        }
     }
 
     /* Clear Active Order */
+    @Transactional
     public void clearActiveOrder(String regid) {
-        orders.remove(regid);
+//        orders.remove(regid);
+        ordersRepository
+                .findStarbucksOrderByRegisterAndStatus(regid, "Ready for Payment.")
+                .ifPresent(order -> {
+                    order.setStatus("Cancelled.");
+
+                    ordersRepository.save(order);
+                });
     }
 
     /*  Process payment for the "active" Order.
@@ -202,17 +231,22 @@ public class StarbucksService {
      */
     @Transactional
     public StarbucksCard processOrder(String regid, String cardnum) throws ResponseStatusException {
-        System.out.println("Pay for Order: Reg ID = " + regid + " Using Card = " + cardnum);
-        StarbucksOrder active = orders.get(regid);
-        if (active == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order Not Found!");
+        log.info("Pay for Order: Reg ID = " + regid + " Using Card = " + cardnum);
+//        StarbucksOrder active = orders.get(regid);
+        Optional<StarbucksOrder> order = ordersRepository.findStarbucksOrderByRegisterAndStatus(regid, "Ready for Payment.");
+
+        if (order.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No Active Order Found!");
         }
+
+        StarbucksOrder active = order.get();
+
         if (cardnum.equals("")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Card Number Not Provided!");
         }
-        if (active.getStatus().startsWith("Paid with Card")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Clear Paid Active Order!");
-        }
+//        if (active.getStatus().startsWith("Paid with Card")) {
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Clear Paid Active Order!");
+//        }
         StarbucksCard card = cardsRepository.findByCardNumber(cardnum);
         if (card == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Card Not Found!");
