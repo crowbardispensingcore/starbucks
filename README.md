@@ -2,7 +2,7 @@
 
 - Deploy Starbucks REST API to GCP
 
-# Starbucks API
+## Starbucks API
 
 GCP MySQL instance private IP address: `172.20.80.3`
 
@@ -16,7 +16,7 @@ starbucks-api endpoint: `34.171.154.111/api `
 
 apiKey: `Zkfokey2311`
 
-## Deployment process
+### Deployment process
 
 ```
 // Create jumpbox
@@ -98,6 +98,32 @@ Ref: https://www.javadevjournal.com/spring-security/spring-security-login/
 
 - Update API credentials to environment variables
 
-## How to re-apply manifest
+  - How to re-apply manifest
 
-`kubectl apply -f my-deployment.yaml`
+    `kubectl apply -f my-deployment.yaml`
+
+- Deploy Cashier Client
+  - Use a LoadBalancer service
+
+## Starbucks Cashier Client
+
+External IP: `34.173.192.103:80`
+
+Cashier credential:
+
+- Username: `student`
+- Password: `cmpe172`
+  - Password is encrypted with `bcrypt` and manually added to `cashier_user` table in `starbucks` cloud SQL
+    - `INSERT INTO cashier_user (id, username, password) VALUES (1, "student", "$2a$10$5WDiSSMvuPkW9Pn6rqIDQuohEIZEN.Bt6wmVhNGh8tVynLahCJag2");`
+
+- Deploy a single RabbitMQ instance to GKE
+
+## RabbitMQ
+
+Management Console IP: `34.170.74.86:80`
+
+Internal IP: `10.104.1.244`
+
+Default username: `guest`
+
+Default password: `guest`

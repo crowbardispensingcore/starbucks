@@ -5,6 +5,7 @@ import com.example.starbuckscashierclient.model.OrderResponse;
 import com.example.starbuckscashierclient.model.RegisterCommand;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -48,8 +49,10 @@ public class OrderController {
             "Tall", "Grande", "Venti", "Your Own Cup"
     ));
 
-    private static final String hostEndpoint = "http://34.171.154.111/api";
-    private static final String apiKey = "Zkfokey2311";
+    @Value("${api.host.endpoint}")
+    private String HOST_ENDPOINT;
+    @Value("${api.key}")
+    private String API_KEY;
     private static final ObjectMapper mapper = new ObjectMapper();
 
     @RequestMapping("/")
@@ -88,11 +91,11 @@ public class OrderController {
         String resourceUrl = "";
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set("apiKey", apiKey);
+        httpHeaders.set("apiKey", API_KEY);
 
         if (action.equals("Clear Order")) {
             log.info("Performing Clear Order action");
-            resourceUrl = hostEndpoint + "/order/register/" + command.getStore();
+            resourceUrl = "http://" + HOST_ENDPOINT + "/order/register/" + command.getStore();
             log.info("Resource URL: {}", resourceUrl);
             ResponseEntity<String> response;
             HttpEntity<String> httpEntity = new HttpEntity<>(httpHeaders);
@@ -116,7 +119,7 @@ public class OrderController {
         }
         else if (action.equals("Place Order")) {
             log.info("Performing Place Order action");
-            resourceUrl = hostEndpoint + "/order/register/" + command.getStore();
+            resourceUrl = "http://" + HOST_ENDPOINT + "/order/register/" + command.getStore();
             log.info("Resource URL: {}", resourceUrl);
             NewOrderRequest newOrderRequest = new NewOrderRequest(command.getDrink(), command.getMilk(), command.getSize());
             ResponseEntity<OrderResponse> newOrderResponse;
@@ -149,7 +152,7 @@ public class OrderController {
         }
         else if (action.equals("Refresh Order")) {
             log.info("Performing Refresh Order action");
-            resourceUrl = hostEndpoint + "/order/register/" + command.getStore();
+            resourceUrl = "http://" + HOST_ENDPOINT + "/order/register/" + command.getStore();
             ResponseEntity<OrderResponse> orderResponse;
             HttpEntity<NewOrderRequest> httpEntity = new HttpEntity<>(httpHeaders);
             try {
